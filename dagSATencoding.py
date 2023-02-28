@@ -5,45 +5,40 @@ class DagSATEncoding:
         defaultOperators = ['&', 'F', 'G', '!', 'U', '|', '->', 'X']
         unary = ['G', 'F', '!', 'X']
         binary = ['&', '|', 'U', '->']
-        numOfVariables = 5
+        numOfVariables = 4
         # except for the operators, the nodes of the "syntax table" are additionally the propositional variables
 
         self.listOfOperators = defaultOperators
 
-        self.unaryOperators = [
-            op for op in self.listOfOperators if op in unary]
-        self.binaryOperators = [
-            op for op in self.listOfOperators if op in binary]
+        self.unaryOperators = unary
 
-        # self.noneOperator = 'none' # a none operator is not needed in this encoding
+        self.binaryOperators = binary
+           
+
+        
 
         self.solver = Solver()
 
-        self.numOfVariables = numOfVariables
+        self.numOfVariables = numOfVariables #p,q,r,s..etc
         self.formulaDepth = D
 
-        # traces = [t.traceVector for t in testTraces.acceptedTraces + testTraces.rejectedTraces]
+        self.listOfVariables = [i for i in range(self.numOfVariables)] #propositions
 
-        #         self.traces = testTraces
-
-        self.listOfVariables = [i for i in range(self.numOfVariables)]
-
-        # keeping track of which positions in a tree (and in time) are visited, so that constraints are not generated twice
-        # self.visitedPositions = set()
+       
 
     """    
     the working variables are 
         - x[i][o]: i is a subformula (row) identifier, o is an operator or a propositional variable. Meaning is "subformula i is an operator (variable) o"
         - l[i][j]:  "left operand of subformula i is subformula j"
         - r[i][j]: "right operand of subformula i is subformula j"
-        - y[i][tr][t]: semantics of formula i in time point t of trace tr
     """
 
     def encodeFormula(self, unsatCore=True):
         self.operatorsAndVariables = self.listOfOperators + self.listOfVariables
 
         self.x = {(i, o): Bool('x_' + str(i) + '_' + str(o))
-                  for i in range(self.formulaDepth) for o in self.operatorsAndVariables}
+                  for i in range(self.formulaDepth) 
+                  for o in self.operatorsAndVariables}
         self.l = {(parentOperator, childOperator): Bool('l_' + str(parentOperator) + '_' + str(childOperator))
                   for parentOperator in range(1, self.formulaDepth)
                   for childOperator in range(parentOperator)}
@@ -193,7 +188,7 @@ class DagSATEncoding:
 
         operator = getValue(rowId, self.x)
         if operator in self.listOfVariables:
-            return ('x' + str(operator))
+            return ('var' + str(operator))
         elif operator in self.unaryOperators:
             leftChild = getValue(rowId, self.l)
             return ([operator, self.reconstructFormula(leftChild, model)])

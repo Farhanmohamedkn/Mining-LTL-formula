@@ -1,6 +1,7 @@
 from dagSATencoding import DagSATEncoding
 from z3 import *
-fg = DagSATEncoding(5)
+depth=int(input("Enter the depth of the formula "))
+fg = DagSATEncoding(depth)
 fg.encodeFormula()
 solverRes = fg.solver.check()
 solverModel = fg.solver.model()
