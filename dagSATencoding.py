@@ -1,4 +1,6 @@
 from z3 import *
+
+from SimpleTree import Formula
 class DagSATEncoding:
     def __init__(self, D):
 
@@ -188,11 +190,11 @@ class DagSATEncoding:
 
         operator = getValue(rowId, self.x)
         if operator in self.listOfVariables:
-            return ('var' + str(operator))
+            return Formula('var' + str(operator))
         elif operator in self.unaryOperators:
             leftChild = getValue(rowId, self.l)
-            return ([operator, self.reconstructFormula(leftChild, model)])
+            return Formula([operator, self.reconstructFormula(leftChild, model)])
         elif operator in self.binaryOperators:
             leftChild = getValue(rowId, self.l)
             rightChild = getValue(rowId, self.r)
-            return ([operator, self.reconstructFormula(leftChild, model), self.reconstructFormula(rightChild, model)])
+            return Formula([operator, self.reconstructFormula(leftChild, model), self.reconstructFormula(rightChild, model)])
