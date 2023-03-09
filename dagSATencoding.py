@@ -1,6 +1,10 @@
 from z3 import *
 
 from SimpleTree import Formula
+
+from lark import Lark, Transformer
+
+
 class DagSATEncoding:
     def __init__(self, D):
 
@@ -8,6 +12,12 @@ class DagSATEncoding:
         unary = ['G', 'F', '!', 'X']
         binary = ['&', '|', 'U', '->']
         numOfVariables = 4
+        startOfFormula = '->var0&var1'
+        result = []
+
+        # print(result)
+        # self.result = result
+        self.result = ['!', 'F', '&', 1]
         # except for the operators, the nodes of the "syntax table" are additionally the propositional variables
 
         self.listOfOperators = defaultOperators
@@ -15,21 +25,17 @@ class DagSATEncoding:
         self.unaryOperators = unary
 
         self.binaryOperators = binary
-           
-
-        
 
         self.solver = Solver()
 
-        self.numOfVariables = numOfVariables #p,q,r,s..etc
+        self.numOfVariables = numOfVariables  # p,q,r,s..etc
         self.formulaDepth = D
 
-        self.listOfVariables = [i for i in range(self.numOfVariables)] #propositions
+        self.listOfVariables = [i for i in range(
+            self.numOfVariables)]  # propositions
 
-       
-
-    """    
-    the working variables are 
+    """
+    the working variables are
         - x[i][o]: i is a subformula (row) identifier, o is an operator or a propositional variable. Meaning is "subformula i is an operator (variable) o"
         - l[i][j]:  "left operand of subformula i is subformula j"
         - r[i][j]: "right operand of subformula i is subformula j"
@@ -39,7 +45,7 @@ class DagSATEncoding:
         self.operatorsAndVariables = self.listOfOperators + self.listOfVariables
 
         self.x = {(i, o): Bool('x_' + str(i) + '_' + str(o))
-                  for i in range(self.formulaDepth) 
+                  for i in range(self.formulaDepth)
                   for o in self.operatorsAndVariables}
         self.l = {(parentOperator, childOperator): Bool('l_' + str(parentOperator) + '_' + str(childOperator))
                   for parentOperator in range(1, self.formulaDepth)
@@ -47,15 +53,23 @@ class DagSATEncoding:
         self.r = {(parentOperator, childOperator): Bool('r_' + str(parentOperator) + '_' + str(childOperator))
                   for parentOperator in range(1, self.formulaDepth)
                   for childOperator in range(parentOperator)}
+        # for m, j in zip(range(self.formulaDepth-1, 0, -1), range(len(self.result))):
+        #     self.x[(m, self.result[j])] = True
 
         self.solver.set(unsat_core=unsatCore)
 
         self.exactlyOneOperator()
         self.firstOperatorVariable()
         self.noDanglingVariables()
+        self.completingSketch()
+
+    def completingSketch(self):
+        for m, j in zip(range(self.formulaDepth-1, 0, -1), range(len(self.result))):
+            self.solver.add(Or([self.x[(m, self.result[j])]]))
 
     def firstOperatorVariable(self):
-        self.solver.add(Or([self.x[k] for k in self.x if k[0] == 0 and k[1] in self.listOfVariables]))
+        self.solver.add(
+            Or([self.x[k] for k in self.x if k[0] == 0 and k[1] in self.listOfVariables]))
 
     def exactlyOneOperator(self):
 
@@ -169,11 +183,13 @@ class DagSATEncoding:
             self.solver.assert_and_track(
                 And([
                     Or(
-                        AtLeast([self.l[(rowId, i)] for rowId in range(i + 1, self.formulaDepth)] + [1]),
-                        AtLeast([self.r[(rowId, i)] for rowId in range(i + 1, self.formulaDepth)] + [1])
+                        AtLeast([self.l[(rowId, i)] for rowId in range(
+                            i + 1, self.formulaDepth)] + [1]),
+                        AtLeast([self.r[(rowId, i)]
+                                for rowId in range(i + 1, self.formulaDepth)] + [1])
                     )
                     for i in range(self.formulaDepth - 1)]
-                ),
+                    ),
                 "no dangling variables"
             )
 
@@ -181,8 +197,17 @@ class DagSATEncoding:
         return self.reconstructFormula(self.formulaDepth - 1, model)
 
     def reconstructFormula(self, rowId, model):
+        # for m, j in zip(range(self.formulaDepth-1, 0, -1),range(len(self.result))):
+        #     model[self.x[(m, self.result[j])]]=True
+
         def getValue(row, vars):
-            tt = [k[1] for k in vars if k[0] == row and model[vars[k]] == True]
+            # try:
+            tt = [k[1]
+                for k in vars if k[0] == row and model[vars[k]] == True]
+            # except:
+            #     tt = [k[1]
+            #           for k in vars if k[0] == row and vars[k] == True]
+
             if len(tt) > 1:
                 raise Exception("more than one true value")
             else:
