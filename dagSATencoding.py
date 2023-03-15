@@ -1,6 +1,7 @@
 from z3 import *
 
 from SimpleTree import Formula
+from SimpleTree import SimpleTree
 
 from lark import Lark, Transformer
 
@@ -12,12 +13,16 @@ class DagSATEncoding:
         unary = ['G', 'F', '!', 'X']
         binary = ['&', '|', 'U', '->']
         numOfVariables = 4
-        startOfFormula = '->var0&var1'
-        result = []
+        pf=SimpleTree()
+        par_formula= ('|(&(?,var1),?)') #Userinput
+        # Formula = '->(&(1,2)),unknwn)'
+        # fr=Formula(mula)
+        
+        tree =Formula.convertTextToFormula(par_formula)
 
-        # print(result)
+
         # self.result = result
-        self.result = ['!', 'F', '&', 1]
+        self.result = ['->','F','&',1]
         # except for the operators, the nodes of the "syntax table" are additionally the propositional variables
 
         self.listOfOperators = defaultOperators
