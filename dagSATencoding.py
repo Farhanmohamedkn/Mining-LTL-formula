@@ -14,15 +14,18 @@ class DagSATEncoding:
         binary = ['&', '|', 'U', '->']
         numOfVariables = 4
         pf=SimpleTree()
-        par_formula= ('|(&(?,var1),?)') #Userinput
+        par_formula= ('|(&(var1,u1),u2)') #Userinput
         # Formula = '->(&(1,2)),unknwn)'
         # fr=Formula(mula)
         
         tree =Formula.convertTextToFormula(par_formula)
 
-
+        for i in range(len(tree)):
+            if isinstance(tree[i], str) and tree[i].startswith("var"):
+                tree[i] = int(tree[i][3:])
+        print(tree)
         # self.result = result
-        self.result = ['->','F','&',1]
+        self.result = tree
         # except for the operators, the nodes of the "syntax table" are additionally the propositional variables
 
         self.listOfOperators = defaultOperators
@@ -70,7 +73,8 @@ class DagSATEncoding:
 
     def completingSketch(self):
         for m, j in zip(range(self.formulaDepth-1, 0, -1), range(len(self.result))):
-            self.solver.add(Or([self.x[(m, self.result[j])]]))
+            if(self.result[j]!='unknown'):
+                self.solver.add(Or([self.x[(m, self.result[j])]]))
 
     def firstOperatorVariable(self):
         self.solver.add(
