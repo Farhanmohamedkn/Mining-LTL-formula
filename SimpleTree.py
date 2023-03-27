@@ -3,6 +3,7 @@ import re
 from lark import Lark, Transformer
 from lark.tree import Tree
 from lark.lexer import Token
+from collections import deque
 symmetric_operators = ["&", "|"]
 binary_operators = ["&", "|", "U","->"]
 unary_operators = ["X", "F", "G", "!"]
@@ -82,8 +83,11 @@ class SimpleTree:
 
 
 class Formula(SimpleTree):
-    
+    index=1
+    indexArray=[5,4,3,2,1]
+
     def __init__(self, formulaArg = "dummyF"):
+        
         
         if not isinstance(formulaArg, str):
             self.label = formulaArg[0]
@@ -118,8 +122,93 @@ class Formula(SimpleTree):
             else:
                 return self.label < other.label
             
+    def pop_one(arr):
+        if arr:
+            return arr.pop(0)
+        else:
+            return None
+    
+    def label_nodes(root, label): 
+        if(root):
+            if(root.label):
+                print(root.label, label)
+                Formula.pop_one(Formula.indexArray)
+            if(root.left):
+                if(hasattr(root.left,'label')):
+                    print(root.left.label, Formula.indexArray[0])
+                    
+                    # Formula.label_nodes(root.left, Formula.indexArray[0])
+                     
+                else:
+                    print(root.left.data, Formula.indexArray[0])
+                Formula.pop_one(Formula.indexArray)
+            if(root.right):
+                if(hasattr(root.right,'label')):
+                    print(root.right.label, Formula.indexArray[0])
+                    
+                    # Formula.label_nodes(root.right, Formula.indexArray[0])
+                else:
+                    print(root.right.data, Formula.indexArray[0]) 
+                Formula.pop_one(Formula.indexArray)
+            
+        return label
+
+    def printLevelOrder(root):
+        h = Formula.height(root)
+        array=[]
+        for i in range(1, h+1):
+            Formula.printCurrentLevel(root, i, array)
+        return array
     
     
+    # Print nodes at a current level
+    def printCurrentLevel(root, level, array):
+        if root is None:
+            return
+        if level == 1:
+            if(hasattr(root,'label')):
+                array.append(root.label) 
+            if(hasattr(root,'data')):
+                array.append(root.data) 
+        elif level > 1:
+            if(hasattr(root,'left')):
+                Formula.printCurrentLevel(root.left, level-1, array)
+            if(hasattr(root,'right')):
+                Formula.printCurrentLevel(root.right, level-1, array)
+ 
+
+ 
+ 
+    def height(node):
+        if node is None:
+            return 0
+        else:
+            lheight=rheight=1
+            # Compute the height of each subtree
+            if(hasattr(node,'left')):
+                lheight = Formula.height(node.left)
+            if(hasattr(node,'right')):
+                rheight = Formula.height(node.right)
+    
+            # Use the larger one
+            if lheight > rheight:
+                return lheight+1
+            else:
+                return rheight+1
+    def bfs_traversal(root):
+        if not root:
+            return []
+        queue = deque([root])
+        res = []
+        while queue:
+            node = queue.popleft()
+            if(hasattr(node,'label')):
+                res.append(node.label)
+                if (hasattr(node,'left')):
+                    queue.append(node.left)
+                if (hasattr(node,'right')):
+                    queue.append(node.right)
+        return res
     @classmethod
     def convertTextToFormula(cls, formulaText):
         
@@ -136,7 +225,7 @@ class Formula(SimpleTree):
                 _binary_expression: binary_operator "(" formula "," formula ")"
                 _unary_expression: unary_operator "(" formula ")"
                 variable: /var[0-9]*/
-                unknown: "?"
+                unknown:  /\?[0-9]*/
                 !binary_operator: "&" | "|" | "->" | "U"
                 !unary_operator: "F" | "G" | "!" | "X"
                 
@@ -161,9 +250,17 @@ class Formula(SimpleTree):
         # print(f"Available variables= {f.getAllVariables()}")
         # print(f"Available subformula= {f.getNumberOfSubformulas()}")
         # print(f"Available setsubformula= {f.getSetOfSubformulas()}")
-        return f
+        # labels = Formula.label_nodes(f,Formula.indexArray[0])
+        test = Formula.printLevelOrder(f)
+        print(test)
+        return test
 
     
+
+
+
+
+
     def prettyPrint(self, top=False):
         if top is True:
             lb = ""
