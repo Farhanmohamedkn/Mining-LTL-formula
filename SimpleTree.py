@@ -83,8 +83,7 @@ class SimpleTree:
 
 
 class Formula(SimpleTree):
-    index=1
-    indexArray=[5,4,3,2,1]
+    
 
     def __init__(self, formulaArg = "dummyF"):
         
@@ -224,6 +223,7 @@ class Formula(SimpleTree):
                         | "false"
                 _binary_expression: binary_operator "(" formula "," formula ")"
                 _unary_expression: unary_operator "(" formula ")"
+                
                 variable: /var[0-9]*/
                 unknown:  /\?[0-9]*/
                 !binary_operator: "&" | "|" | "->" | "U"

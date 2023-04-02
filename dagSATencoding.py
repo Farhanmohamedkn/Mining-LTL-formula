@@ -14,18 +14,19 @@ class DagSATEncoding:
         binary = ['&', '|', 'U', '->']
         numOfVariables = 4
         pf=SimpleTree()
-        par_formula= ('|(&(var1,u1),u2)') #Userinput
+        par_formula= ('|(&(var1,?1),var1)') #Userinput
+        print(f"user input= {par_formula}")
         # Formula = '->(&(1,2)),unknwn)'
         # fr=Formula(mula)
         
-        tree =Formula.convertTextToFormula(par_formula)
+        tree_as_list =Formula.convertTextToFormula(par_formula)
 
-        for i in range(len(tree)):
-            if isinstance(tree[i], str) and tree[i].startswith("var"):
-                tree[i] = int(tree[i][3:])
-        print(tree)
+        for i in range(len(tree_as_list)):
+            if isinstance(tree_as_list[i], str) and tree_as_list[i].startswith("var"):
+                tree_as_list[i] = int(tree_as_list[i][3:])
+        print(tree_as_list)
         # self.result = result
-        self.result = tree
+        self.result = tree_as_list
         # except for the operators, the nodes of the "syntax table" are additionally the propositional variables
 
         self.listOfOperators = defaultOperators
